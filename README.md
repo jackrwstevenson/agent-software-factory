@@ -1,4 +1,4 @@
-# Local Agentic Software Factory
+# Agent Software Factory
 
 A deliberately small, locally runnable proof of an auditable software-delivery loop. The factory takes one GitHub issue through implementation, independent verification, review, risk-based authorization, progressive rollout, and observation on a single developer machine.
 
