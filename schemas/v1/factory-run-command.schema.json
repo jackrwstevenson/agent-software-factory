@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/factory-run-command.schema.json",
+  "title": "Factory Run command v1",
+  "oneOf": [
+    { "$ref": "#/$defs/createRun" },
+    { "$ref": "#/$defs/transition" }
+  ],
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "gitObjectId": { "type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$" },
+    "lifecycleState": {
+      "enum": [
+        "building", "verifying", "reviewing", "authorizing",
+        "awaiting_human_authorization", "rolling_out", "observing",
+        "rolling_back", "paused_for_operator", "succeeded", "rejected",
+        "failed", "rolled_back", "aborted"
+      ]
+    },
+    "authority": { "enum": ["orchestrator", "observer", "rollout_babysitter", "human"] },
+    "createRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "authority", "factoryRunId", "issueId"],
+      "properties": {
+        "kind": { "const": "create_run" },
+        "authority": { "$ref": "#/$defs/authority" },
+        "factoryRunId": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+        "issueId": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "authority", "to", "reason", "evidence"],
+      "properties": {
+        "kind": { "const": "transition" },
+        "authority": { "$ref": "#/$defs/authority" },
+        "to": { "$ref": "#/$defs/lifecycleState" },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "evidence": { "$ref": "#/$defs/evidence" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "candidate": { "$ref": "https://factory.local/schemas/v1/candidate-release.schema.json" },
+        "builderEvidenceDigest": { "$ref": "#/$defs/digest" },
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "verificationEvidenceDigest": { "$ref": "#/$defs/digest" },
+        "review": { "$ref": "#/$defs/review" },
+        "authorization": { "$ref": "https://factory.local/schemas/v1/authorization.schema.json" },
+        "rollout": { "$ref": "#/$defs/rollout" },
+        "observation": { "$ref": "#/$defs/observation" },
+        "repair": { "$ref": "#/$defs/repair" },
+        "authorizationRequest": { "$ref": "#/$defs/authorizationRequest" },
+        "rejection": { "$ref": "#/$defs/rejection" },
+        "pause": { "$ref": "#/$defs/pause" },
+        "resumption": { "$ref": "#/$defs/resumption" },
+        "abort": { "$ref": "#/$defs/abort" },
+        "failure": { "$ref": "#/$defs/failure" },
+        "rollback": { "$ref": "#/$defs/rollback" },
+        "rollbackConfirmation": { "$ref": "#/$defs/rollbackConfirmation" }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateHeadSha", "disposition", "riskClassification", "evidenceDigest"],
+      "properties": {
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "disposition": { "const": "review_complete" },
+        "riskClassification": { "enum": ["low", "elevated", "prohibited"] },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "rollout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateHeadSha", "stagingPassed", "allProgressiveGatesPassed", "candidateExposureBasisPoints", "stableAvailable", "evidenceDigest"],
+      "properties": {
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "stagingPassed": { "type": "boolean" },
+        "allProgressiveGatesPassed": { "type": "boolean" },
+        "candidateExposureBasisPoints": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "stableAvailable": { "type": "boolean" },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateHeadSha", "windowComplete", "telemetryPassed", "unresolvedIncidentCount", "evidenceDigest"],
+      "properties": {
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "windowComplete": { "type": "boolean" },
+        "telemetryPassed": { "type": "boolean" },
+        "unresolvedIncidentCount": { "type": "integer", "minimum": 0 },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "repair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateHeadSha", "requestedBy", "evidenceDigest"],
+      "properties": {
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "requestedBy": { "enum": ["verifier", "reviewer"] },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "authorizationRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateHeadSha", "evidenceDigest"],
+      "properties": {
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "rejection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateHeadSha", "source", "evidenceDigest"],
+      "properties": {
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "source": { "enum": ["policy", "human"] },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "pause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blockedStage", "reason"],
+      "properties": {
+        "blockedStage": { "enum": ["build", "verify", "review", "authorize", "rollout", "observe"] },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "candidateExposureBasisPoints": { "type": "integer", "minimum": 0, "maximum": 10000 }
+      }
+    },
+    "resumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reconciled", "evidenceDigest"],
+      "properties": {
+        "reconciled": { "const": true },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "abort": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "candidateExposureBasisPoints"],
+      "properties": {
+        "reason": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "candidateExposureBasisPoints": { "type": "integer", "minimum": 0, "maximum": 10000 }
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "candidateExposureBasisPoints"],
+      "properties": {
+        "reason": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "candidateExposureBasisPoints": { "type": "integer", "minimum": 0, "maximum": 10000 }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trigger", "candidateHeadSha", "candidateExposureBasisPoints", "evidenceDigest"],
+      "properties": {
+        "trigger": { "enum": ["safety", "human_abort"] },
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "candidateExposureBasisPoints": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "rollbackConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stableRestoration", "evidenceDigest"],
+      "properties": {
+        "stableRestoration": { "enum": ["confirmed", "failed"] },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    }
+  }
+}

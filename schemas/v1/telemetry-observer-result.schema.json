@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/telemetry-observer-result.schema.json",
+  "title": "Deterministic Observer result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "role",
+    "invocationId",
+    "observerSessionId",
+    "sampleSequence",
+    "acceptedEventCursor",
+    "factoryRunId",
+    "candidateReleaseId",
+    "routingRevisionId",
+    "windowId",
+    "windowDigest",
+    "inputDigest",
+    "evidenceState",
+    "assessmentDigest",
+    "facts",
+    "incidentTransitions",
+    "semanticResultDigest",
+    "resultDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "observer-result/v1"
+    },
+    "role": {
+      "const": "observer"
+    },
+    "invocationId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observerSessionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sampleSequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "acceptedEventCursor": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "factoryRunId": {
+      "type": "string"
+    },
+    "candidateReleaseId": {
+      "type": "string"
+    },
+    "routingRevisionId": {
+      "type": "string"
+    },
+    "windowId": {
+      "type": "string"
+    },
+    "windowDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "inputDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "evidenceState": {
+      "type": "string"
+    },
+    "facts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "completeness",
+        "sufficiency",
+        "signals"
+      ],
+      "properties": {
+        "completeness": {
+          "enum": [
+            "complete",
+            "incomplete_gap",
+            "incomplete_interrupted",
+            "invalid_conflict",
+            "stale"
+          ]
+        },
+        "sufficiency": {
+          "enum": [
+            "complete_sufficient",
+            "complete_insufficient_duration",
+            "complete_insufficient_samples",
+            "not_evaluated"
+          ]
+        },
+        "signals": {
+          "type": "object"
+        }
+      }
+    },
+    "incidentTransitions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/transition"
+      }
+    },
+    "semanticResultDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "resultDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "assessmentDigest": {
+      "$ref": "#/$defs/digest"
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "transition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "condition"
+          ],
+          "properties": {
+            "kind": {
+              "const": "open"
+            },
+            "condition": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "deduplicationKey",
+            "conditionId",
+            "severity",
+            "evidence",
+            "conditionPresent",
+            "nextCleanStreak"
+          ],
+          "properties": {
+            "kind": {
+              "const": "update"
+            },
+            "deduplicationKey": {
+              "$ref": "#/$defs/digest"
+            },
+            "conditionId": {
+              "type": "string"
+            },
+            "severity": {
+              "enum": [
+                "warning",
+                "high",
+                "critical"
+              ]
+            },
+            "evidence": {
+              "type": "object"
+            },
+            "conditionPresent": {
+              "type": "boolean"
+            },
+            "nextCleanStreak": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "deduplicationKey",
+            "conditionId",
+            "evidence",
+            "nextCleanStreak",
+            "resolutionKind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "resolve"
+            },
+            "deduplicationKey": {
+              "$ref": "#/$defs/digest"
+            },
+            "conditionId": {
+              "type": "string"
+            },
+            "evidence": {
+              "type": "object"
+            },
+            "nextCleanStreak": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "resolutionKind": {
+              "enum": [
+                "condition_cleared",
+                "cursor_reconciled"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

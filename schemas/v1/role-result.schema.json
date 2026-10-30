@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/role-result.schema.json",
+  "title": "Factory Role Result Envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "contract", "role", "factory_run_id", "stage_attempt_id",
+    "invocation_id", "input_sha256", "candidate_head_sha", "decision", "summary",
+    "evidence_claims", "unresolved_risks", "role_result"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "contract": { "const": "role_result" },
+    "role": { "enum": ["builder", "verifier", "reviewer"] },
+    "factory_run_id": { "$ref": "#/$defs/run" },
+    "stage_attempt_id": { "$ref": "#/$defs/attempt" },
+    "invocation_id": { "$ref": "#/$defs/invocation" },
+    "input_sha256": { "$ref": "#/$defs/digest" },
+    "candidate_head_sha": { "anyOf": [{ "$ref": "#/$defs/git_sha" }, { "type": "null" }] },
+    "decision": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "evidence_claims": { "$ref": "#/$defs/claims" },
+    "unresolved_risks": { "$ref": "#/$defs/risks" },
+    "role_result": { "type": "object" }
+  },
+  "$defs": {
+    "run": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "attempt": { "type": "string", "pattern": "^fa_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "invocation": { "type": "string", "pattern": "^ri_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "git_sha": { "type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+    "claims": {
+      "type": "array", "maxItems": 256,
+      "items": { "type": "string", "pattern": "^(?:event|fact|artifact):[a-z][a-z0-9_.:-]{1,126}$" }
+    },
+    "risks": {
+      "type": "array", "maxItems": 64,
+      "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
+    },
+    "blocker": {
+      "type": "object", "additionalProperties": false,
+      "required": ["code", "detail"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^[a-z][a-z0-9_]{2,63}$" },
+        "detail": { "type": "string", "minLength": 1, "maxLength": 4000 }
+      }
+    }
+  }
+}

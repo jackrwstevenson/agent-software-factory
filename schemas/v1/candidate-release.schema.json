@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/candidate-release.schema.json",
+  "title": "Candidate Release v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contract",
+    "factoryRunId",
+    "candidateOrdinal",
+    "builderStageAttemptId",
+    "branchRef",
+    "baseSha",
+    "headCommitSha",
+    "sourceTreeSha"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "contract": { "const": "candidate_release" },
+    "factoryRunId": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "candidateOrdinal": { "type": "integer", "minimum": 1 },
+    "builderStageAttemptId": { "type": "string", "pattern": "^fa_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "branchRef": { "type": "string", "pattern": "^refs/heads/[^\\s]+$", "maxLength": 255 },
+    "baseSha": { "$ref": "#/$defs/gitObjectId" },
+    "headCommitSha": { "$ref": "#/$defs/gitObjectId" },
+    "sourceTreeSha": { "$ref": "#/$defs/gitObjectId" }
+  },
+  "$defs": {
+    "gitObjectId": { "type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$" }
+  }
+}

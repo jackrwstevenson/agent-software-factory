@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/run-event.schema.json",
+  "title": "Run event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contract",
+    "sequence",
+    "eventId",
+    "factoryRunId",
+    "recordedAt",
+    "expectedVersion",
+    "previousEventDigest",
+    "record",
+    "resultingStateDigest",
+    "eventDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "run_event"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "eventId": {
+      "type": "string",
+      "pattern": "^evt_[a-z0-9][a-z0-9_-]{2,63}$"
+    },
+    "factoryRunId": {
+      "type": "string",
+      "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$"
+    },
+    "recordedAt": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "expectedVersion": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "previousEventDigest": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "record": {
+      "$ref": "#/$defs/record"
+    },
+    "resultingStateDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "eventDigest": {
+      "$ref": "#/$defs/digest"
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "port": {
+      "enum": [
+        "GitHubControl",
+        "SourceControl",
+        "RoleRuntime",
+        "ReleaseTopology",
+        "TelemetryEngine"
+      ]
+    },
+    "record": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "command"
+          ],
+          "properties": {
+            "kind": {
+              "const": "lifecycle_command"
+            },
+            "command": {
+              "$ref": "https://factory.local/schemas/v1/factory-run-command.schema.json"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "effect",
+            "inputDigest"
+          ],
+          "properties": {
+            "kind": {
+              "const": "effect_intent"
+            },
+            "effect": {
+              "$ref": "#/$defs/effectBinding"
+            },
+            "inputDigest": {
+              "$ref": "#/$defs/digest"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "effect",
+            "outputDigest"
+          ],
+          "properties": {
+            "kind": {
+              "const": "effect_result"
+            },
+            "effect": {
+              "$ref": "#/$defs/effectBinding"
+            },
+            "outputDigest": {
+              "$ref": "#/$defs/digest"
+            }
+          }
+        }
+      ]
+    },
+    "effectBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effectIntentId",
+        "port",
+        "operation"
+      ],
+      "properties": {
+        "effectIntentId": {
+          "type": "string",
+          "pattern": "^fx_[a-z0-9][a-z0-9_-]{2,63}$"
+        },
+        "port": {
+          "$ref": "#/$defs/port"
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/role-builder-result.schema.json",
+  "title": "Builder Role Result v1",
+  "allOf": [
+    { "$ref": "https://factory.local/schemas/v1/role-result.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "role": { "const": "builder" },
+        "candidate_head_sha": { "type": "null" },
+        "decision": { "enum": ["changes_ready", "blocked"] },
+        "role_result": {
+          "type": "object", "additionalProperties": false,
+          "required": ["changed_paths", "criteria", "commands", "demonstration_summary", "blocker"],
+          "properties": {
+            "changed_paths": {
+              "type": "array", "uniqueItems": true, "maxItems": 2048,
+              "items": { "type": "string", "minLength": 1, "maxLength": 1024 }
+            },
+            "criteria": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/criterion" } },
+            "commands": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/command" } },
+            "demonstration_summary": { "type": "string", "maxLength": 8000 },
+            "blocker": {
+              "anyOf": [
+                { "type": "null" },
+                { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/blocker" }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "criterion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["criterion", "status", "evidence_claims"],
+      "properties": {
+        "criterion": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "status": { "enum": ["addressed", "not_addressed"] },
+        "evidence_claims": { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/claims" }
+      }
+    },
+    "command": {
+      "type": "object", "additionalProperties": false,
+      "required": ["command", "status", "evidence_claims"],
+      "properties": {
+        "command": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "status": { "enum": ["passed", "failed", "not_run"] },
+        "evidence_claims": { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/claims" }
+      }
+    }
+  }
+}

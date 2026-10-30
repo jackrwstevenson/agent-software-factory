@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/authorization.schema.json",
+  "title": "Authorization v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contract",
+    "authorizationId",
+    "kind",
+    "decision",
+    "factoryRunId",
+    "candidateHeadSha",
+    "riskClassification",
+    "recordedAt",
+    "evidenceDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "contract": { "const": "authorization" },
+    "authorizationId": { "type": "string", "pattern": "^az_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "kind": { "enum": ["autonomous_low", "human"] },
+    "decision": { "enum": ["authorized", "rejected"] },
+    "factoryRunId": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "candidateHeadSha": { "type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$" },
+    "riskClassification": { "enum": ["low", "elevated"] },
+    "recordedAt": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$" },
+    "evidenceDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "autonomous_low" } }, "required": ["kind"] },
+      "then": {
+        "properties": {
+          "riskClassification": { "const": "low" },
+          "decision": { "const": "authorized" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "human" } }, "required": ["kind"] },
+      "then": { "properties": { "riskClassification": { "const": "elevated" } } }
+    }
+  ]
+}

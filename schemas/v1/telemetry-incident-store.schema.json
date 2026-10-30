@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/telemetry-incident-store.schema.json",
+  "title": "Durable Incident store snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "records", "transitions", "storeDigest"],
+  "properties": {
+    "schemaVersion": { "const": "incident-store/v1" },
+    "records": { "type": "array", "items": { "$ref": "#/$defs/incident" } },
+    "transitions": { "type": "array", "items": { "$ref": "#/$defs/applied" } },
+    "storeDigest": { "$ref": "#/$defs/digest" }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "incident": {
+      "type": "object", "additionalProperties": false,
+      "required": ["incidentId", "deduplicationKey", "conditionId", "severity", "state", "affected", "recurrenceOf", "openedSampleSequence", "lastSampleSequence", "firstWindowId", "lastWindowId", "evidence", "cleanStreak", "cleanWindowsToResolve", "conditionWindowCount", "lastConditionPresent", "resolution", "mitigation"],
+      "properties": {
+        "incidentId": { "type": "string" }, "deduplicationKey": { "$ref": "#/$defs/digest" }, "conditionId": { "type": "string" },
+        "severity": { "enum": ["warning", "high", "critical"] }, "state": { "enum": ["open", "mitigated", "resolved"] },
+        "affected": { "type": "object" }, "recurrenceOf": { "type": ["string", "null"] },
+        "openedSampleSequence": { "type": "integer", "minimum": 1 }, "lastSampleSequence": { "type": "integer", "minimum": 1 },
+        "firstWindowId": { "type": "string" }, "lastWindowId": { "type": "string" }, "evidence": { "type": "array", "items": { "type": "object" } },
+        "cleanStreak": { "type": "integer", "minimum": 0 }, "cleanWindowsToResolve": { "type": "integer", "minimum": 1 },
+        "conditionWindowCount": { "type": "integer", "minimum": 1 }, "lastConditionPresent": { "type": "boolean" },
+        "resolution": { "type": ["object", "null"] }, "mitigation": { "type": ["object", "null"] }
+      }
+    },
+    "applied": {
+      "type": "object", "additionalProperties": false, "required": ["sequence", "sampleSequence", "windowId", "transition", "result", "resultingStoreDigest"],
+      "properties": {
+        "sequence": { "type": "integer", "minimum": 1 }, "sampleSequence": { "type": "integer", "minimum": 1 }, "windowId": { "type": "string" },
+        "transition": { "type": "object" }, "result": { "type": "object" }, "resultingStoreDigest": { "$ref": "#/$defs/digest" }
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/telemetry-window-summary.schema.json",
+  "title": "Telemetry Window summary v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "factoryRunId", "windowId", "binding", "acceptedEventStart", "acceptedEventEnd", "acceptedEventDigest", "elapsedMs", "completeness", "completenessReasons", "sourceGaps", "metrics", "health", "processExitObserved", "responseIdentityMismatchObserved", "windowDigest"],
+  "properties": {
+    "schemaVersion": { "const": "telemetry-window-summary/v1" },
+    "factoryRunId": { "type": "string" },
+    "windowId": { "type": "string" },
+    "binding": { "$ref": "https://factory.local/schemas/v1/telemetry-window.schema.json" },
+    "acceptedEventStart": { "type": "integer", "minimum": 1 },
+    "acceptedEventEnd": { "type": "integer", "minimum": 1 },
+    "acceptedEventDigest": { "$ref": "#/$defs/digest" },
+    "elapsedMs": { "type": "integer", "minimum": 0 },
+    "completeness": { "enum": ["complete", "incomplete_gap", "incomplete_interrupted", "invalid_conflict", "stale"] },
+    "completenessReasons": { "type": "array", "items": { "type": "string" } },
+    "sourceGaps": { "type": "array", "items": { "$ref": "#/$defs/sourceGap" } },
+    "metrics": {
+      "type": "object", "additionalProperties": false, "required": ["stable", "candidate"],
+      "properties": { "stable": { "$ref": "#/$defs/armMetrics" }, "candidate": { "$ref": "#/$defs/armMetrics" } }
+    },
+    "health": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "stable": { "$ref": "#/$defs/health" }, "candidate": { "$ref": "#/$defs/health" },
+        "staging": { "$ref": "#/$defs/health" }, "router": { "$ref": "#/$defs/health" },
+        "traffic": { "$ref": "#/$defs/health" }
+      }
+    },
+    "processExitObserved": { "type": "boolean" },
+    "responseIdentityMismatchObserved": { "type": "boolean" },
+    "windowDigest": { "$ref": "#/$defs/digest" }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nullableNumber": { "type": ["number", "null"] },
+    "sourceGap": {
+      "type": "object", "additionalProperties": false, "required": ["sourceKey", "expected", "actual"],
+      "properties": { "sourceKey": { "type": "string" }, "expected": { "type": "array", "items": { "type": "integer" } }, "actual": { "type": "array", "items": { "type": "integer" } } }
+    },
+    "armMetrics": {
+      "type": "object", "additionalProperties": false,
+      "required": ["logicalRequestsAssigned", "logicalRequestsDispatched", "logicalRequestsFinished", "successes", "finalFailures", "interrupted", "protocolFaults", "uniqueAssignedUsers", "uniqueFinishedUsers", "attempts", "retries", "attemptOutcomes", "retryRate", "nonSuccessAttemptRate", "exactReleaseResponses", "latencySampleCount", "latencyMinimumMs", "latencyMaximumMs", "latencySumMs", "latencyMedianMs", "latencyP95Ms"],
+      "properties": {
+        "logicalRequestsAssigned": { "type": "integer", "minimum": 0 }, "logicalRequestsDispatched": { "type": "integer", "minimum": 0 },
+        "logicalRequestsFinished": { "type": "integer", "minimum": 0 }, "successes": { "type": "integer", "minimum": 0 },
+        "finalFailures": { "type": "integer", "minimum": 0 }, "interrupted": { "type": "integer", "minimum": 0 },
+        "protocolFaults": { "type": "integer", "minimum": 0 }, "uniqueAssignedUsers": { "type": "integer", "minimum": 0 },
+        "uniqueFinishedUsers": { "type": "integer", "minimum": 0 }, "attempts": { "type": "integer", "minimum": 0 },
+        "retries": { "type": "integer", "minimum": 0 }, "attemptOutcomes": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+        "retryRate": { "$ref": "#/$defs/nullableNumber" }, "nonSuccessAttemptRate": { "$ref": "#/$defs/nullableNumber" },
+        "exactReleaseResponses": { "type": "integer", "minimum": 0 }, "latencySampleCount": { "type": "integer", "minimum": 0 },
+        "latencyMinimumMs": { "$ref": "#/$defs/nullableNumber" }, "latencyMaximumMs": { "$ref": "#/$defs/nullableNumber" },
+        "latencySumMs": { "type": "number", "minimum": 0 }, "latencyMedianMs": { "$ref": "#/$defs/nullableNumber" },
+        "latencyP95Ms": { "$ref": "#/$defs/nullableNumber" }
+      }
+    },
+    "health": {
+      "type": "object", "additionalProperties": false,
+      "required": ["component", "state", "expectedSamples", "samples", "healthySamples", "failedSamples", "identityMismatches", "longestConsecutiveFailures", "endingConsecutiveHealthy", "processExits", "routingRevisionMismatches", "reasons"],
+      "properties": {
+        "component": { "enum": ["stable", "candidate", "staging", "router", "traffic"] },
+        "state": { "enum": ["healthy", "degraded", "unhealthy", "unknown_due_to_gap"] },
+        "expectedSamples": { "type": "integer", "minimum": 0 }, "samples": { "type": "integer", "minimum": 0 },
+        "healthySamples": { "type": "integer", "minimum": 0 }, "failedSamples": { "type": "integer", "minimum": 0 },
+        "identityMismatches": { "type": "integer", "minimum": 0 }, "longestConsecutiveFailures": { "type": "integer", "minimum": 0 },
+        "endingConsecutiveHealthy": { "type": "integer", "minimum": 0 }, "processExits": { "type": "integer", "minimum": 0 },
+        "routingRevisionMismatches": { "type": "integer", "minimum": 0 }, "reasons": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

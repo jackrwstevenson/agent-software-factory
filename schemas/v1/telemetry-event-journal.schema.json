@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/telemetry-event-journal.schema.json",
+  "title": "Accepted telemetry event journal checkpoint v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "factoryRunId", "events", "conflicts", "journalDigest"],
+  "properties": {
+    "schemaVersion": { "const": "telemetry-event-journal/v1" },
+    "factoryRunId": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "events": { "type": "array", "items": { "$ref": "https://factory.local/schemas/v1/telemetry-event.schema.json" } },
+    "conflicts": { "type": "array", "items": { "$ref": "#/$defs/conflict" } },
+    "journalDigest": { "$ref": "#/$defs/digest" }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "conflict": {
+      "type": "object", "additionalProperties": false,
+      "required": ["windowId", "eventId", "sourceIdentity", "existingDigest", "conflictingDigest"],
+      "properties": {
+        "windowId": { "type": "string" }, "eventId": { "type": "string" }, "sourceIdentity": { "type": "string" },
+        "existingDigest": { "$ref": "#/$defs/digest" }, "conflictingDigest": { "$ref": "#/$defs/digest" }
+      }
+    }
+  }
+}

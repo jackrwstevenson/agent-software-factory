@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/role-verifier-result.schema.json",
+  "title": "Verifier Role Result v1",
+  "allOf": [
+    { "$ref": "https://factory.local/schemas/v1/role-result.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "role": { "const": "verifier" },
+        "candidate_head_sha": { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/git_sha" },
+        "decision": { "enum": ["passed", "repair_required", "blocked"] },
+        "role_result": {
+          "type": "object", "additionalProperties": false,
+          "required": ["checks", "criteria", "findings", "blocker"],
+          "properties": {
+            "checks": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/check" } },
+            "criteria": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/criterion" } },
+            "findings": { "type": "array", "maxItems": 256, "items": { "$ref": "#/$defs/finding" } },
+            "blocker": {
+              "anyOf": [
+                { "type": "null" },
+                { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/blocker" }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "check": {
+      "type": "object", "additionalProperties": false,
+      "required": ["command", "status", "evidence_claims"],
+      "properties": {
+        "command": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "status": { "enum": ["passed", "failed", "not_run"] },
+        "evidence_claims": { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/claims" }
+      }
+    },
+    "criterion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["criterion", "status", "evidence_claims"],
+      "properties": {
+        "criterion": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "status": { "enum": ["passed", "failed", "blocked"] },
+        "evidence_claims": { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/claims" }
+      }
+    },
+    "finding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["finding_id", "summary", "location", "repairable", "evidence_claims"],
+      "properties": {
+        "finding_id": { "type": "string", "pattern": "^[a-z][a-z0-9_.:-]{2,127}$" },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "location": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "repairable": { "type": "boolean" },
+        "evidence_claims": { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/claims" }
+      }
+    }
+  }
+}

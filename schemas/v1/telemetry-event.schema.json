@@ -1,0 +1,672 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/telemetry-event.schema.json",
+  "title": "Accepted telemetry source event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "factoryRunId",
+    "occurredAt",
+    "monotonicMs",
+    "source",
+    "windowId",
+    "eventType",
+    "binding",
+    "payloadDigest",
+    "payload",
+    "ingestSequence",
+    "ingestedAt",
+    "sourceEventDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "telemetry-event/v1"
+    },
+    "eventId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "factoryRunId": {
+      "type": "string",
+      "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$"
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "monotonicMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "windowId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eventType": {
+      "enum": [
+        "routing_revision_applied",
+        "telemetry_window_opened",
+        "process_health_sampled",
+        "process_exited",
+        "request_started",
+        "request_attempt_finished",
+        "protocol_fault",
+        "request_finished",
+        "telemetry_window_closed"
+      ]
+    },
+    "binding": {
+      "$ref": "#/$defs/eventBinding"
+    },
+    "payloadDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "ingestSequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "ingestedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sourceEventDigest": {
+      "$ref": "#/$defs/digest"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "routing_revision_applied"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/routingPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "telemetry_window_opened"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/openPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "process_health_sampled"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/healthPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "process_exited"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/exitPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "request_started"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/requestStartedPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "request_attempt_finished"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/attemptPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "protocol_fault"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/protocolFaultPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "request_finished"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/requestFinishedPayload"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "telemetry_window_closed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/closePayload"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "instanceId",
+        "processAttempt",
+        "sourceSequence"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "orchestrator",
+            "supervisor",
+            "router",
+            "synthetic_traffic",
+            "release"
+          ]
+        },
+        "instanceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "processAttempt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceSequence": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "eventBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "topologyEpoch",
+        "routingRevisionId",
+        "routingConfigFingerprint",
+        "phase",
+        "gate",
+        "candidateBasisPoints",
+        "stableReleaseId",
+        "candidateReleaseId",
+        "workloadId",
+        "workloadDigest",
+        "policyId"
+      ],
+      "properties": {
+        "topologyEpoch": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "routingRevisionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "routingConfigFingerprint": {
+          "$ref": "#/$defs/digest"
+        },
+        "phase": {
+          "enum": [
+            "staging",
+            "stable_reference",
+            "rollout",
+            "observation",
+            "rollback_confirmation"
+          ]
+        },
+        "gate": {
+          "enum": [
+            "staging",
+            "stable_reference",
+            "gate_5",
+            "gate_10",
+            "gate_30",
+            "gate_50",
+            "gate_80",
+            "observation"
+          ]
+        },
+        "candidateBasisPoints": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "stableReleaseId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidateReleaseId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workloadId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workloadDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "policyId": {
+          "const": "rollout-policy/v1"
+        }
+      }
+    },
+    "processIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "factoryRunId",
+        "instanceId",
+        "processKind",
+        "processAttempt",
+        "releaseId",
+        "ownershipNonce",
+        "pid",
+        "processBirthIdentity",
+        "endpointId"
+      ],
+      "properties": {
+        "factoryRunId": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/factoryRunId"
+        },
+        "instanceId": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/instanceId"
+        },
+        "processKind": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/processKind"
+        },
+        "processAttempt": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/processAttempt"
+        },
+        "releaseId": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/releaseId"
+        },
+        "ownershipNonce": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/ownershipNonce"
+        },
+        "pid": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/pid"
+        },
+        "processBirthIdentity": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/processBirthIdentity"
+        },
+        "endpointId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "routingPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observedFingerprint",
+        "revisionManifest"
+      ],
+      "properties": {
+        "observedFingerprint": {
+          "$ref": "#/$defs/digest"
+        },
+        "revisionManifest": {
+          "type": "object"
+        }
+      }
+    },
+    "openPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding",
+        "bindingDigest"
+      ],
+      "properties": {
+        "binding": {
+          "$ref": "https://factory.local/schemas/v1/telemetry-window.schema.json"
+        },
+        "bindingDigest": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "healthPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "component",
+        "healthy",
+        "reason",
+        "reportedRoutingRevisionId"
+      ],
+      "properties": {
+        "component": {
+          "$ref": "#/$defs/processIdentity"
+        },
+        "healthy": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reportedRoutingRevisionId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "exitPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "component",
+        "expected",
+        "exitCode",
+        "signal"
+      ],
+      "properties": {
+        "component": {
+          "$ref": "#/$defs/processIdentity"
+        },
+        "expected": {
+          "type": "boolean"
+        },
+        "exitCode": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "signal": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "requestStartedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "userId",
+        "operationId",
+        "bucket",
+        "selectedArm",
+        "selectedComponent"
+      ],
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "operationId": {
+          "type": "string"
+        },
+        "bucket": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9999
+        },
+        "selectedArm": {
+          "enum": [
+            "stable",
+            "candidate"
+          ]
+        },
+        "selectedComponent": {
+          "$ref": "#/$defs/processIdentity"
+        }
+      }
+    },
+    "attemptPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "attemptOrdinal",
+        "selectedArm",
+        "selectedComponent",
+        "outcome",
+        "statusCode",
+        "attemptLatencyMs",
+        "responseIdentityVerified"
+      ],
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "attemptOrdinal": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "selectedArm": {
+          "enum": [
+            "stable",
+            "candidate"
+          ]
+        },
+        "selectedComponent": {
+          "$ref": "#/$defs/processIdentity"
+        },
+        "outcome": {
+          "enum": [
+            "success",
+            "http_error",
+            "timeout",
+            "unavailable",
+            "identity_mismatch",
+            "router_error"
+          ]
+        },
+        "statusCode": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "attemptLatencyMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "responseIdentityVerified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "protocolFaultPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "condition"
+      ],
+      "properties": {
+        "condition": {
+          "type": "string"
+        },
+        "selectedArm": {
+          "enum": [
+            "stable",
+            "candidate"
+          ]
+        }
+      }
+    },
+    "requestFinishedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "selectedArm",
+        "selectedComponent",
+        "finalOutcome",
+        "attemptCount",
+        "durationMs",
+        "failureKind",
+        "responseIdentityVerified"
+      ],
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "selectedArm": {
+          "enum": [
+            "stable",
+            "candidate"
+          ]
+        },
+        "selectedComponent": {
+          "$ref": "#/$defs/processIdentity"
+        },
+        "finalOutcome": {
+          "enum": [
+            "success",
+            "failed"
+          ]
+        },
+        "attemptCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "durationMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "failureKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "responseIdentityVerified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "closePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bindingDigest",
+        "reason",
+        "inFlightRequests",
+        "sourceCursorsAtClose"
+      ],
+      "properties": {
+        "bindingDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "inFlightRequests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceCursorsAtClose": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

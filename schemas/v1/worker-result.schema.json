@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/worker-result.schema.json",
+  "title": "Deterministic worker result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contract",
+    "role",
+    "factoryRunId",
+    "candidateHeadSha",
+    "inputSha256",
+    "decision",
+    "facts"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "contract": { "const": "worker_result" },
+    "role": { "enum": ["observer", "rollout_babysitter"] },
+    "factoryRunId": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "candidateHeadSha": { "type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$" },
+    "inputSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "decision": {
+      "enum": [
+        "health_confirmed",
+        "incident_opened",
+        "incident_updated",
+        "incident_resolved",
+        "monitoring_gap",
+        "advance_to_rollout",
+        "advance_exposure",
+        "enter_observation",
+        "hold",
+        "rollback",
+        "pause",
+        "continue_observation",
+        "observation_passed",
+        "stable_confirmed"
+      ]
+    },
+    "facts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "candidateExposureBasisPoints": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "stableAvailable": { "type": "boolean" },
+        "observationComplete": { "type": "boolean" },
+        "telemetryPassed": { "type": "boolean" },
+        "unresolvedIncidentCount": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

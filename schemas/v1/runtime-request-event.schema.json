@@ -1,0 +1,400 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-software-factory.local/schemas/v1/runtime-request-event.schema.json",
+  "title": "Runtime Event",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/routingChangePending"
+    },
+    {
+      "$ref": "#/$defs/routingChangeApplied"
+    },
+    {
+      "$ref": "#/$defs/trafficWindowOpened"
+    },
+    {
+      "$ref": "#/$defs/trafficWindowClosed"
+    },
+    {
+      "$ref": "#/$defs/requestStarted"
+    },
+    {
+      "$ref": "#/$defs/attemptStarted"
+    },
+    {
+      "$ref": "#/$defs/protocolFault"
+    },
+    {
+      "$ref": "#/$defs/attemptFinished"
+    },
+    {
+      "$ref": "#/$defs/requestFinished"
+    }
+  ],
+  "$defs": {
+    "globalBase": {
+      "type": "object",
+      "required": [
+        "sequence",
+        "type",
+        "factoryRunId",
+        "at"
+      ],
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "type": {
+          "type": "string"
+        },
+        "factoryRunId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "routingBase": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/globalBase"
+        }
+      ],
+      "required": [
+        "revision"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "runtime-routing-revision.schema.json"
+        }
+      }
+    },
+    "requestBase": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/globalBase"
+        }
+      ],
+      "required": [
+        "requestId",
+        "target",
+        "releaseId",
+        "processAttempt",
+        "routingRevision",
+        "routingFullFingerprint",
+        "workloadVersion",
+        "workloadUsersDigest"
+      ],
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "enum": [
+            "stable",
+            "candidate"
+          ]
+        },
+        "releaseId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "processAttempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "routingRevision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "routingFullFingerprint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "workloadVersion": {
+          "const": "synthetic-users-v1"
+        },
+        "workloadUsersDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "routingChangePending": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/routingBase"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "required": [],
+      "properties": {
+        "type": {
+          "const": "routing_change_pending"
+        }
+      }
+    },
+    "routingChangeApplied": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/routingBase"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "required": [],
+      "properties": {
+        "type": {
+          "const": "routing_change_applied"
+        }
+      }
+    },
+    "trafficWindowOpened": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/routingBase"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "required": [
+        "windowId"
+      ],
+      "properties": {
+        "type": {
+          "const": "traffic_window_opened"
+        },
+        "windowId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "trafficWindowClosed": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/routingBase"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "required": [
+        "windowId",
+        "reason"
+      ],
+      "properties": {
+        "type": {
+          "const": "traffic_window_closed"
+        },
+        "windowId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "enum": [
+            "routing_change",
+            "shutdown",
+            "interrupted"
+          ]
+        }
+      }
+    },
+    "requestStarted": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestBase"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "required": [
+        "userId",
+        "bucket",
+        "candidateBasisPoints",
+        "configFingerprint"
+      ],
+      "properties": {
+        "type": {
+          "const": "request_started"
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bucket": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9999
+        },
+        "candidateBasisPoints": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "configFingerprint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "attemptStarted": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestBase"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "required": [
+        "attempt"
+      ],
+      "properties": {
+        "type": {
+          "const": "attempt_started"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "protocolFault": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestBase"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "required": [
+        "attempt",
+        "faultKind",
+        "expectedReleaseId",
+        "observedReleaseId",
+        "expectedProcessAttempt",
+        "observedProcessAttempt",
+        "detail"
+      ],
+      "properties": {
+        "type": {
+          "const": "protocol_fault"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "faultKind": {
+          "enum": [
+            "release_identity_mismatch",
+            "process_identity_mismatch",
+            "invalid_response"
+          ]
+        },
+        "expectedReleaseId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observedReleaseId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expectedProcessAttempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "observedProcessAttempt": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "attemptFinished": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestBase"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "required": [
+        "attempt",
+        "outcome",
+        "statusCode",
+        "latencyMs"
+      ],
+      "properties": {
+        "type": {
+          "const": "attempt_finished"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "outcome": {
+          "enum": [
+            "success",
+            "error",
+            "unavailable"
+          ]
+        },
+        "statusCode": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 100,
+          "maximum": 599
+        },
+        "latencyMs": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "requestFinished": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestBase"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "required": [
+        "attempts",
+        "outcome"
+      ],
+      "properties": {
+        "type": {
+          "const": "request_finished"
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "outcome": {
+          "enum": [
+            "success",
+            "failed"
+          ]
+        }
+      }
+    }
+  }
+}

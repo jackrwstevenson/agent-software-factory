@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-software-factory.local/schemas/v1/source-capability.schema.json",
+  "title": "Source Capability v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "contract", "host", "repository", "gitHubCliVersion", "linkedBranches", "selectedBranchMode", "evidence", "observedAt"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "contract": { "const": "source_capability" },
+    "host": { "const": "github.org.com" },
+    "repository": { "const": "engineering/agentic-software-factory" },
+    "gitHubCliVersion": { "type": "string", "minLength": 1 },
+    "linkedBranches": { "enum": ["supported", "unsupported"] },
+    "selectedBranchMode": { "enum": ["linked", "pure_git"] },
+    "evidence": { "type": "string", "minLength": 1 },
+    "observedAt": { "type": "string", "minLength": 1 }
+  }
+}

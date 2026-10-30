@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-software-factory.local/schemas/v1/github-conditional-poll.schema.json",
+  "title": "GitHub Conditional Poll v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "contract", "key", "etag"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "contract": { "const": "github_conditional_poll" },
+    "key": { "type": "string", "minLength": 1 },
+    "etag": { "type": "string", "minLength": 1 }
+  }
+}

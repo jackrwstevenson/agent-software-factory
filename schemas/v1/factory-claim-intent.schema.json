@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-software-factory.local/schemas/v1/factory-claim-intent.schema.json",
+  "title": "Factory Claim Intent v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contract",
+    "status",
+    "effectIntentId",
+    "factoryRunId",
+    "claimEventId",
+    "claimedAt",
+    "issue",
+    "commentBody",
+    "commentBodyDigest"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "contract": { "const": "factory_claim_intent" },
+    "status": { "enum": ["pending", "claimed", "accepted", "paused"] },
+    "effectIntentId": { "type": "string", "pattern": "^fx_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "factoryRunId": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "claimEventId": { "type": "string", "pattern": "^fe_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "claimedAt": { "type": "string", "minLength": 1 },
+    "issue": { "$ref": "#/$defs/githubIssue" },
+    "commentBody": { "type": "string", "minLength": 1 },
+    "commentBodyDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "receipt": { "$ref": "#/$defs/receipt" },
+    "pauseDetail": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "githubIssue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["number", "title", "body", "createdAt", "updatedAt", "state", "url", "labels", "assignees"],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "createdAt": { "type": "string", "minLength": 1 },
+        "updatedAt": { "type": "string", "minLength": 1 },
+        "state": { "enum": ["open", "closed"] },
+        "url": { "type": "string", "minLength": 1 },
+        "labels": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "assignees": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "pullRequest": { "type": "boolean" }
+      }
+    },
+    "factoryIssue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["issueId", "number", "title", "acceptanceCriteria", "url", "createdAt"],
+      "properties": {
+        "issueId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "number": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string" },
+        "acceptanceCriteria": { "type": "array", "items": { "type": "string" } },
+        "url": { "type": "string", "minLength": 1 },
+        "createdAt": { "type": "string", "minLength": 1 }
+      }
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factoryRunId", "issue", "commentId", "commentUrl", "verifiedAt"],
+      "properties": {
+        "factoryRunId": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+        "issue": { "$ref": "#/$defs/factoryIssue" },
+        "commentId": { "type": "integer", "minimum": 1 },
+        "commentUrl": { "type": "string", "minLength": 1 },
+        "verifiedAt": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

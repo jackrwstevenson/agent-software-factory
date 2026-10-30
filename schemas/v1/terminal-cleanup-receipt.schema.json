@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-software-factory.local/schemas/v1/terminal-cleanup-receipt.schema.json",
+  "title": "Terminal Cleanup Receipt v1",
+  "$defs": {
+    "gitObjectId": { "type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+    "absentRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "sha"],
+      "properties": { "state": { "const": "absent" }, "sha": { "type": "null" } }
+    },
+    "refObservation": {
+      "oneOf": [
+        { "$ref": "#/$defs/absentRef" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "sha"],
+          "properties": { "state": { "const": "present" }, "sha": { "$ref": "#/$defs/gitObjectId" } }
+        }
+      ]
+    },
+    "absentWorktree": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": { "state": { "const": "absent" } }
+    },
+    "worktreeObservation": {
+      "oneOf": [
+        { "$ref": "#/$defs/absentWorktree" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "path", "branchRef", "headSha", "dirty"],
+          "properties": {
+            "state": { "const": "locked" },
+            "path": { "type": "string", "minLength": 1 },
+            "branchRef": { "type": "string", "minLength": 1 },
+            "headSha": { "$ref": "#/$defs/gitObjectId" },
+            "dirty": { "type": ["boolean", "null"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "entries"],
+          "properties": {
+            "state": { "const": "ambiguous" },
+            "entries": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "branchRef", "headSha", "locked"],
+                "properties": {
+                  "path": { "type": "string", "minLength": 1 },
+                  "branchRef": { "type": ["string", "null"] },
+                  "headSha": { "$ref": "#/$defs/gitObjectId" },
+                  "locked": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "pullRequestObservation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state"],
+          "properties": { "state": { "const": "absent" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "number", "headSha"],
+          "properties": {
+            "state": { "enum": ["open", "closed", "merged"] },
+            "number": { "type": "integer", "minimum": 1 },
+            "headSha": { "$ref": "#/$defs/gitObjectId" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "entries"],
+          "properties": {
+            "state": { "const": "ambiguous" },
+            "entries": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["state", "number", "headSha"],
+                "properties": {
+                  "state": { "enum": ["open", "closed", "merged"] },
+                  "number": { "type": "integer", "minimum": 1 },
+                  "headSha": { "$ref": "#/$defs/gitObjectId" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "contract", "status", "terminalOutcome", "worktree", "localBranch", "remoteBranch", "pullRequest"],
+      "properties": {
+        "schemaVersion": { "const": "1.0" },
+        "contract": { "const": "terminal_cleanup_receipt" },
+        "status": { "const": "complete" },
+        "terminalOutcome": { "const": "succeeded" },
+        "worktree": { "$ref": "#/$defs/absentWorktree" },
+        "localBranch": { "$ref": "#/$defs/absentRef" },
+        "remoteBranch": { "$ref": "#/$defs/absentRef" },
+        "pullRequest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "number", "headSha"],
+          "properties": {
+            "state": { "const": "merged" },
+            "number": { "type": "integer", "minimum": 1 },
+            "headSha": { "$ref": "#/$defs/gitObjectId" }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "contract", "status", "terminalOutcome", "worktree", "localBranch", "remoteBranch", "pullRequest"],
+      "properties": {
+        "schemaVersion": { "const": "1.0" },
+        "contract": { "const": "terminal_cleanup_receipt" },
+        "status": { "const": "complete" },
+        "terminalOutcome": { "enum": ["rejected", "failed", "rolled_back", "aborted"] },
+        "worktree": { "$ref": "#/$defs/absentWorktree" },
+        "localBranch": { "$ref": "#/$defs/refObservation" },
+        "remoteBranch": { "$ref": "#/$defs/refObservation" },
+        "pullRequest": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["state"],
+              "properties": { "state": { "const": "absent" } }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["state", "number", "headSha"],
+              "properties": {
+                "state": { "const": "closed" },
+                "number": { "type": "integer", "minimum": 1 },
+                "headSha": { "$ref": "#/$defs/gitObjectId" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "contract", "status", "terminalOutcome", "worktree", "localBranch", "remoteBranch", "pullRequest", "reason"],
+      "properties": {
+        "schemaVersion": { "const": "1.0" },
+        "contract": { "const": "terminal_cleanup_receipt" },
+        "status": { "const": "pending_cleanup" },
+        "terminalOutcome": { "enum": ["succeeded", "rejected", "failed", "rolled_back", "aborted"] },
+        "worktree": { "$ref": "#/$defs/worktreeObservation" },
+        "localBranch": { "$ref": "#/$defs/refObservation" },
+        "remoteBranch": { "$ref": "#/$defs/refObservation" },
+        "pullRequest": { "$ref": "#/$defs/pullRequestObservation" },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    }
+  ]
+}

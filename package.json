@@ -1,0 +1,36 @@
+{
+  "name": "local-agentic-software-factory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.16.0"
+  },
+  "bin": {
+    "factory": "dist/src/cli.js"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:contract": "npm run build --silent && node --test dist/test/contract/*.test.js",
+    "test:domain": "npm run build --silent && node --test dist/test/domain/*.test.js",
+    "test:replay": "npm run build --silent && node --test dist/test/replay/*.test.js",
+    "test:control": "npm run build --silent && node --test dist/test/control/*.test.js",
+    "test:acceptance": "npm run build --silent && node --test dist/test/acceptance/*.test.js",
+    "test": "npm run build --silent && node --test dist/test/*/*.test.js",
+    "test:roles": "npm run build --silent && node --test dist/test/roles/*.test.js",
+    "test:topology": "npm run build --silent && node --test dist/test/topology/*.test.js",
+    "test:routing": "npm run build --silent && node --test dist/test/routing/*.test.js",
+    "test:telemetry": "npm run build --silent && node --test dist/test/telemetry/*.test.js",
+    "test:tiny-tasks": "node examples/tiny-tasks/run-verify.mjs",
+    "tiny-tasks:start": "node examples/tiny-tasks/server.mjs"
+  },
+  "dependencies": {
+    "ajv": "8.17.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "typescript": "5.9.3"
+  }
+}

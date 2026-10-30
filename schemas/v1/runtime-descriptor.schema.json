@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json",
+  "title": "Runtime Descriptor",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contract",
+    "protocolVersion",
+    "factoryRunId",
+    "instanceId",
+    "processAttempt",
+    "processKind",
+    "releaseId",
+    "ownershipNonce",
+    "pid",
+    "processBirthIdentity",
+    "port",
+    "lifecycleState",
+    "details",
+    "endpoint",
+    "readyAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "runtime_descriptor"
+    },
+    "protocolVersion": {
+      "const": "runtime-status/v1"
+    },
+    "factoryRunId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "instanceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "processAttempt": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "processKind": {
+      "enum": [
+        "stable_release",
+        "staging_release",
+        "candidate_release",
+        "router",
+        "synthetic_traffic"
+      ]
+    },
+    "releaseId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ownershipNonce": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{48}$"
+    },
+    "pid": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "processBirthIdentity": {
+      "type": "string",
+      "minLength": 1
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "lifecycleState": {
+      "enum": [
+        "ready",
+        "draining"
+      ]
+    },
+    "details": {
+      "type": "object"
+    },
+    "endpoint": {
+      "type": "string",
+      "pattern": "^http://127\\.0\\.0\\.1:[0-9]{1,5}$"
+    },
+    "readyAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

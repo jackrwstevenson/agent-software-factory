@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-software-factory.local/schemas/v1/runtime-supervisor-event.schema.json",
+  "title": "Runtime Supervisor Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "contract", "sequence", "at", "type", "factoryRunId"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "contract": { "const": "runtime_supervisor_event" },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "at": { "type": "string", "format": "date-time" },
+    "type": { "type": "string", "minLength": 1 },
+    "factoryRunId": { "type": "string", "minLength": 1 },
+    "instanceId": { "type": "string", "minLength": 1 },
+    "processAttempt": { "type": "integer", "minimum": 1 },
+    "detail": { "type": "object" }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/handoff-manifest.schema.json",
+  "title": "Handoff Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "handoff_id", "kind", "factory_run_id", "source_role", "downstream",
+    "source_stage_attempt_id", "source_result_sha256", "candidate", "created_at", "payload", "evidence_refs"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "handoff_id": { "type": "string", "pattern": "^ho_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "kind": { "enum": ["builder_to_verifier", "verifier_to_reviewer", "verifier_to_builder_repair", "reviewer_to_builder_repair", "reviewer_to_authorize", "authorize_to_rollout", "rollout_decision", "observer_incident"] },
+    "factory_run_id": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "source_role": { "$ref": "#/$defs/participant" },
+    "downstream": { "$ref": "#/$defs/participant" },
+    "source_stage_attempt_id": { "type": "string", "pattern": "^fa_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "source_result_sha256": { "$ref": "#/$defs/digest" },
+    "candidate": { "$ref": "#/$defs/candidate" },
+    "created_at": { "type": "string", "minLength": 20, "maxLength": 40 },
+    "payload": { "type": "object" },
+    "evidence_refs": {
+      "type": "array", "maxItems": 256,
+      "items": { "type": "string", "pattern": "^(?:event|fact|artifact):[a-z][a-z0-9_.:-]{1,126}$" }
+    }
+  },
+  "$defs": {
+    "participant": { "enum": ["builder", "verifier", "reviewer", "authorize", "rollout_babysitter", "observer"] },
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "git_sha": { "type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+    "candidate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "contract", "factory_run_id", "candidate_ordinal", "builder_stage_attempt_id", "branch_ref", "base_sha", "head_commit_sha", "source_tree_sha"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "contract": { "const": "candidate_release" },
+        "factory_run_id": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+        "candidate_ordinal": { "type": "integer", "minimum": 1 },
+        "builder_stage_attempt_id": { "type": "string", "pattern": "^fa_[a-z0-9][a-z0-9_-]{2,63}$" },
+        "branch_ref": { "type": "string", "pattern": "^refs/heads/[^ ]+$" },
+        "base_sha": { "$ref": "#/$defs/git_sha" },
+        "head_commit_sha": { "$ref": "#/$defs/git_sha" },
+        "source_tree_sha": { "$ref": "#/$defs/git_sha" }
+      }
+    }
+  }
+}

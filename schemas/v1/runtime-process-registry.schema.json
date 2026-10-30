@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-software-factory.local/schemas/v1/runtime-process-registry.schema.json",
+  "title": "Runtime Process Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contract",
+    "factoryRunId",
+    "startupOrder",
+    "instances",
+    "desiredRouting",
+    "routing",
+    "updatedAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "runtime_process_registry"
+    },
+    "factoryRunId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "startupOrder": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "instances": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/process"
+      }
+    },
+    "desiredRouting": {
+      "anyOf": [
+        {
+          "$ref": "runtime-routing-revision.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "routing": {
+      "anyOf": [
+        {
+          "$ref": "runtime-routing-revision.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "intentId",
+        "recordedAt"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "spawn",
+            "restart",
+            "stop"
+          ]
+        },
+        "intentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "factoryRunId",
+        "instanceId",
+        "processKind",
+        "processAttempt",
+        "releaseId",
+        "commandDigest",
+        "desiredState",
+        "observedState",
+        "pid",
+        "processGroupId",
+        "processBirthIdentity",
+        "ownershipNonce",
+        "endpoint",
+        "runtimeDescriptorPath",
+        "stdoutPath",
+        "stderrPath",
+        "dataDirectory",
+        "startedAt",
+        "readyAt",
+        "exitedAt",
+        "exitCode",
+        "exitSignal",
+        "expectedExit",
+        "intent"
+      ],
+      "properties": {
+        "factoryRunId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instanceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "processKind": {
+          "enum": [
+            "stable_release",
+            "staging_release",
+            "candidate_release",
+            "router",
+            "synthetic_traffic"
+          ]
+        },
+        "processAttempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "releaseId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "commandDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "desiredState": {
+          "enum": [
+            "running",
+            "stopped"
+          ]
+        },
+        "observedState": {
+          "enum": [
+            "absent",
+            "starting",
+            "ready",
+            "exited",
+            "stopped"
+          ]
+        },
+        "pid": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "processGroupId": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "processBirthIdentity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ownershipNonce": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{48}$"
+        },
+        "endpoint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "runtimeDescriptorPath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stdoutPath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stderrPath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataDirectory": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "readyAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "exitedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "exitCode": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "exitSignal": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^SIG[A-Z0-9]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expectedExit": {
+          "type": "boolean"
+        },
+        "intent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/intent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

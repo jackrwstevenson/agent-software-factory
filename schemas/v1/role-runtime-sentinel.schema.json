@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/role-runtime-sentinel.schema.json",
+  "title": "Role Runtime Sentinel Result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contract", "sentinel", "passed", "observations"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "contract": { "const": "role_runtime_sentinel" },
+    "sentinel": { "enum": ["filesystem", "auth_location", "network", "privileged_descriptors", "verification_writes"] },
+    "passed": { "type": "boolean" },
+    "observations": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowed_write_succeeded": { "type": "boolean" },
+        "outside_root_denied": { "type": "boolean" },
+        "protected_control_denied": { "type": "boolean" },
+        "auth_location_denied": { "type": "boolean" },
+        "public_network_denied": { "type": "boolean" },
+        "loopback_network_denied": { "type": "boolean" },
+        "privileged_descriptor_denied": { "type": "boolean" },
+        "source_write_denied": { "type": "boolean" },
+        "scratch_write_succeeded": { "type": "boolean" }
+      }
+    }
+  }
+}

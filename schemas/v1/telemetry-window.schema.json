@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/telemetry-window.schema.json",
+  "title": "Telemetry Window binding v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "factoryRunId",
+    "windowId",
+    "topologyEpoch",
+    "routingRevisionId",
+    "routingConfigFingerprint",
+    "phase",
+    "gate",
+    "candidateBasisPoints",
+    "stableReleaseId",
+    "candidateReleaseId",
+    "workloadId",
+    "workloadDigest",
+    "policyId",
+    "requestedIntervalMs",
+    "collectionDeadlineMs",
+    "components",
+    "requiredComponents",
+    "sourceCursorsAtOpen",
+    "pinnedStableReferenceWindowId",
+    "bindingDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "telemetry-window/v1"
+    },
+    "factoryRunId": {
+      "type": "string",
+      "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$"
+    },
+    "windowId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "topologyEpoch": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "routingRevisionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "routingConfigFingerprint": {
+      "$ref": "#/$defs/digest"
+    },
+    "phase": {
+      "enum": [
+        "staging",
+        "stable_reference",
+        "rollout",
+        "observation",
+        "rollback_confirmation"
+      ]
+    },
+    "gate": {
+      "enum": [
+        "staging",
+        "stable_reference",
+        "gate_5",
+        "gate_10",
+        "gate_30",
+        "gate_50",
+        "gate_80",
+        "observation"
+      ]
+    },
+    "candidateBasisPoints": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "stableReleaseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidateReleaseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workloadId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workloadDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "policyId": {
+      "const": "rollout-policy/v1"
+    },
+    "requestedIntervalMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "collectionDeadlineMs": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stable",
+        "candidate",
+        "staging",
+        "router",
+        "traffic"
+      ],
+      "properties": {
+        "stable": {
+          "$ref": "#/$defs/processIdentity"
+        },
+        "candidate": {
+          "$ref": "#/$defs/processIdentity"
+        },
+        "staging": {
+          "$ref": "#/$defs/processIdentity"
+        },
+        "router": {
+          "$ref": "#/$defs/processIdentity"
+        },
+        "traffic": {
+          "$ref": "#/$defs/processIdentity"
+        }
+      }
+    },
+    "requiredComponents": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "stable",
+          "candidate",
+          "staging",
+          "router",
+          "traffic"
+        ]
+      }
+    },
+    "sourceCursorsAtOpen": {
+      "type": "object",
+      "propertyNames": {
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "pinnedStableReferenceWindowId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bindingDigest": {
+      "$ref": "#/$defs/digest"
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "processIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "factoryRunId",
+        "instanceId",
+        "processKind",
+        "processAttempt",
+        "releaseId",
+        "ownershipNonce",
+        "pid",
+        "processBirthIdentity",
+        "endpointId"
+      ],
+      "properties": {
+        "factoryRunId": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/factoryRunId"
+        },
+        "instanceId": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/instanceId"
+        },
+        "processKind": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/processKind"
+        },
+        "processAttempt": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/processAttempt"
+        },
+        "releaseId": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/releaseId"
+        },
+        "ownershipNonce": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/ownershipNonce"
+        },
+        "pid": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/pid"
+        },
+        "processBirthIdentity": {
+          "$ref": "https://agentic-software-factory.local/schemas/v1/runtime-descriptor.schema.json#/properties/processBirthIdentity"
+        },
+        "endpointId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

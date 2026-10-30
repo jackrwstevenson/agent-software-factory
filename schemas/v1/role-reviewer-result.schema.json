@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/role-reviewer-result.schema.json",
+  "title": "Reviewer Role Result v1",
+  "allOf": [
+    { "$ref": "https://factory.local/schemas/v1/role-result.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "role": { "const": "reviewer" },
+        "candidate_head_sha": { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/git_sha" },
+        "decision": { "enum": ["review_complete", "repair_required", "blocked"] },
+        "role_result": {
+          "type": "object", "additionalProperties": false,
+          "required": ["findings", "correctness_assessment", "security_assessment", "risk_factors", "risk_classification", "blocker"],
+          "properties": {
+            "findings": { "type": "array", "maxItems": 256, "items": { "$ref": "#/$defs/finding" } },
+            "correctness_assessment": { "type": "string", "minLength": 1, "maxLength": 8000 },
+            "security_assessment": { "type": "string", "minLength": 1, "maxLength": 8000 },
+            "risk_factors": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/risk_factor" } },
+            "risk_classification": { "enum": ["low", "elevated", "prohibited", null] },
+            "blocker": {
+              "anyOf": [
+                { "type": "null" },
+                { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/blocker" }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "finding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["finding_id", "category", "severity", "repairable", "location", "rationale", "evidence_claims"],
+      "properties": {
+        "finding_id": { "type": "string", "pattern": "^[a-z][a-z0-9_.:-]{2,127}$" },
+        "category": { "enum": ["correctness", "security", "operations", "reversibility", "scope"] },
+        "severity": { "enum": ["info", "warning", "must_fix", "prohibited"] },
+        "repairable": { "type": "boolean" },
+        "location": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "rationale": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "evidence_claims": { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/claims" }
+      }
+    },
+    "risk_factor": {
+      "type": "object", "additionalProperties": false,
+      "required": ["rule_id", "classification", "rationale", "evidence_claims"],
+      "properties": {
+        "rule_id": { "type": "string", "pattern": "^[a-z][a-z0-9_.:-]{2,127}$" },
+        "classification": { "enum": ["low", "elevated", "prohibited"] },
+        "rationale": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "evidence_claims": { "$ref": "https://factory.local/schemas/v1/role-result.schema.json#/$defs/claims" }
+      }
+    }
+  }
+}

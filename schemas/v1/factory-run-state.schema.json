@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/factory-run-state.schema.json",
+  "title": "Factory Run state v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "factoryRunId", "issueId", "version", "lifecycleState",
+    "candidate", "candidateHistory", "builderEvidenceDigest", "verification",
+    "review", "authorization", "rollout", "observation", "candidateExposureBasisPoints",
+    "paused", "rollback", "terminalOutcome"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "factoryRunId": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9_-]{2,63}$" },
+    "issueId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "version": { "type": "integer", "minimum": 1 },
+    "lifecycleState": { "$ref": "#/$defs/lifecycleState" },
+    "candidate": { "oneOf": [{ "$ref": "https://factory.local/schemas/v1/candidate-release.schema.json" }, { "type": "null" }] },
+    "candidateHistory": { "type": "array", "items": { "$ref": "https://factory.local/schemas/v1/candidate-release.schema.json" } },
+    "builderEvidenceDigest": { "$ref": "#/$defs/nullableDigest" },
+    "verification": { "oneOf": [{ "$ref": "#/$defs/verification" }, { "type": "null" }] },
+    "review": { "oneOf": [{ "$ref": "#/$defs/review" }, { "type": "null" }] },
+    "authorization": { "oneOf": [{ "$ref": "https://factory.local/schemas/v1/authorization.schema.json" }, { "type": "null" }] },
+    "rollout": { "oneOf": [{ "$ref": "#/$defs/rollout" }, { "type": "null" }] },
+    "observation": { "oneOf": [{ "$ref": "#/$defs/observation" }, { "type": "null" }] },
+    "candidateExposureBasisPoints": { "type": "integer", "minimum": 0, "maximum": 10000 },
+    "paused": { "oneOf": [{ "$ref": "#/$defs/paused" }, { "type": "null" }] },
+    "rollback": { "oneOf": [{ "$ref": "#/$defs/rollback" }, { "type": "null" }] },
+    "terminalOutcome": { "type": ["string", "null"], "enum": ["succeeded", "rejected", "failed", "rolled_back", "aborted", null] }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nullableDigest": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+    "gitObjectId": { "type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$" },
+    "lifecycleState": {
+      "enum": [
+        "building", "verifying", "reviewing", "authorizing",
+        "awaiting_human_authorization", "rolling_out", "observing",
+        "rolling_back", "paused_for_operator", "succeeded", "rejected",
+        "failed", "rolled_back", "aborted"
+      ]
+    },
+    "verification": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidateHeadSha", "evidenceDigest"],
+      "properties": {
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "review": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidateHeadSha", "disposition", "riskClassification", "evidenceDigest"],
+      "properties": {
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "disposition": { "const": "review_complete" },
+        "riskClassification": { "enum": ["low", "elevated", "prohibited"] },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "rollout": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidateHeadSha", "stagingPassed", "allProgressiveGatesPassed", "candidateExposureBasisPoints", "stableAvailable", "evidenceDigest"],
+      "properties": {
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "stagingPassed": { "type": "boolean" },
+        "allProgressiveGatesPassed": { "type": "boolean" },
+        "candidateExposureBasisPoints": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "stableAvailable": { "type": "boolean" },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "observation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidateHeadSha", "windowComplete", "telemetryPassed", "unresolvedIncidentCount", "evidenceDigest"],
+      "properties": {
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "windowComplete": { "type": "boolean" },
+        "telemetryPassed": { "type": "boolean" },
+        "unresolvedIncidentCount": { "type": "integer", "minimum": 0 },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "paused": {
+      "type": "object", "additionalProperties": false,
+      "required": ["priorState", "blockedStage", "reason"],
+      "properties": {
+        "priorState": { "$ref": "#/$defs/lifecycleState" },
+        "blockedStage": { "enum": ["build", "verify", "review", "authorize", "rollout", "observe"] },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 1024 }
+      }
+    },
+    "rollback": {
+      "type": "object", "additionalProperties": false,
+      "required": ["trigger", "candidateHeadSha", "candidateExposureBasisPoints", "evidenceDigest"],
+      "properties": {
+        "trigger": { "enum": ["safety", "human_abort"] },
+        "candidateHeadSha": { "$ref": "#/$defs/gitObjectId" },
+        "candidateExposureBasisPoints": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "evidenceDigest": { "$ref": "#/$defs/digest" }
+      }
+    }
+  }
+}

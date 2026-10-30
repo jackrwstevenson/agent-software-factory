@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/run-snapshot.schema.json",
+  "title": "Rebuildable run snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contract",
+    "version",
+    "state",
+    "stateDigest",
+    "effects",
+    "lastEventDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "run_snapshot"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "state": {
+      "$ref": "https://factory.local/schemas/v1/factory-run-state.schema.json"
+    },
+    "stateDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/effect"
+      }
+    },
+    "lastEventDigest": {
+      "$ref": "#/$defs/digest"
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "port": {
+      "enum": [
+        "GitHubControl",
+        "SourceControl",
+        "RoleRuntime",
+        "ReleaseTopology",
+        "TelemetryEngine"
+      ]
+    },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effect",
+        "inputDigest",
+        "status",
+        "outputDigest"
+      ],
+      "properties": {
+        "effect": {
+          "$ref": "#/$defs/effectBinding"
+        },
+        "inputDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "succeeded"
+          ]
+        },
+        "outputDigest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "pending"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "outputDigest": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "succeeded"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "outputDigest": {
+                "$ref": "#/$defs/digest"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "effectBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effectIntentId",
+        "port",
+        "operation"
+      ],
+      "properties": {
+        "effectIntentId": {
+          "type": "string",
+          "pattern": "^fx_[a-z0-9][a-z0-9_-]{2,63}$"
+        },
+        "port": {
+          "$ref": "#/$defs/port"
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-software-factory.local/schemas/v1/runtime-routing-revision.schema.json",
+  "title": "Runtime Routing Revision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contract",
+    "revision",
+    "reason",
+    "priorRevision",
+    "algorithmId",
+    "factoryRunId",
+    "rolloutSeed",
+    "stable",
+    "candidate",
+    "candidateBasisPoints",
+    "workload",
+    "configFingerprint",
+    "fullFingerprint"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "runtime_routing_revision"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "priorRevision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/priorRevision"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "algorithmId": {
+      "const": "sha256-sticky-basis-points-v1"
+    },
+    "factoryRunId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "rolloutSeed": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "stable": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/target"
+        },
+        {
+          "properties": {
+            "processKind": {
+              "const": "stable_release"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "candidate": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/target"
+        },
+        {
+          "properties": {
+            "processKind": {
+              "const": "candidate_release"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "candidateBasisPoints": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "workload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "userCount",
+        "usersDigest"
+      ],
+      "properties": {
+        "version": {
+          "const": "synthetic-users-v1"
+        },
+        "userCount": {
+          "const": 10000
+        },
+        "usersDigest": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "configFingerprint": {
+      "$ref": "#/$defs/digest"
+    },
+    "fullFingerprint": {
+      "$ref": "#/$defs/digest"
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "priorRevision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "fullFingerprint"
+      ],
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fullFingerprint": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instanceId",
+        "releaseId",
+        "processKind",
+        "processAttempt",
+        "ownershipNonce",
+        "pid",
+        "processBirthIdentity",
+        "endpoint"
+      ],
+      "properties": {
+        "instanceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "releaseId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "processKind": {
+          "enum": [
+            "stable_release",
+            "candidate_release"
+          ]
+        },
+        "processAttempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ownershipNonce": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{48}$"
+        },
+        "pid": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "processBirthIdentity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "endpoint": {
+          "type": "string",
+          "pattern": "^http://127\\.0\\.0\\.1:[0-9]{1,5}$"
+        }
+      }
+    }
+  }
+}

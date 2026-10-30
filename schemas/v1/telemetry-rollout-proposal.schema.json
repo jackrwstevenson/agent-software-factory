@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/schemas/v1/telemetry-rollout-proposal.schema.json",
+  "title": "Rollout Babysitter proposal v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "role",
+    "phase",
+    "currentGate",
+    "legalNextGate",
+    "inputDigest",
+    "factoryRunId",
+    "candidateReleaseId",
+    "routingRevisionId",
+    "windowDigest",
+    "acceptedObserverRecordDigest",
+    "policyId",
+    "proposal",
+    "reasons",
+    "proposalDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "rollout-babysitter-proposal/v1"
+    },
+    "role": {
+      "const": "rollout_babysitter"
+    },
+    "phase": {
+      "enum": [
+        "staging",
+        "stable_reference",
+        "rollout",
+        "observation",
+        "rollback_confirmation"
+      ]
+    },
+    "factoryRunId": {
+      "type": "string"
+    },
+    "candidateReleaseId": {
+      "type": "string"
+    },
+    "routingRevisionId": {
+      "type": "string"
+    },
+    "windowDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "acceptedObserverRecordDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "policyId": {
+      "const": "rollout-policy/v1"
+    },
+    "proposal": {
+      "enum": [
+        "advance_to_rollout",
+        "advance_exposure",
+        "enter_observation",
+        "hold",
+        "rollback",
+        "pause",
+        "continue_observation",
+        "observation_passed",
+        "stable_confirmed",
+        "incident"
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "proposalDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "currentGate": {
+      "enum": [
+        "staging",
+        "stable_reference",
+        "gate_5",
+        "gate_10",
+        "gate_30",
+        "gate_50",
+        "gate_80",
+        "observation"
+      ]
+    },
+    "legalNextGate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "stable_reference",
+        "gate_5",
+        "gate_10",
+        "gate_30",
+        "gate_50",
+        "gate_80",
+        "observation",
+        null
+      ]
+    },
+    "inputDigest": {
+      "$ref": "#/$defs/digest"
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}
